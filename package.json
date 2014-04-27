@@ -4,8 +4,8 @@
   "description": "Dig Down Dwarf Simulator",
   "main": "lib/index.coffee",
   "scripts": {
-    "start": "coffee bin/ddd",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "cake dev",
+    "test": "cake test"
   },
   "repository": {
     "type": "git",
@@ -22,5 +22,14 @@
   "homepage": "https://github.com/royvandewater/ddd",
   "dependencies": {
     "coffee-script": "~1.7.1"
+  },
+  "devDependencies": {
+    "mocha": "~1.18.2",
+    "sinon-chai": "~2.5.0",
+    "async": "~0.7.0",
+    "chai": "~1.9.1",
+    "sinon": "~1.9.1",
+    "watch": "~0.10.0",
+    "underscore": "~1.6.0"
   }
 }
