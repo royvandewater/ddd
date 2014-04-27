@@ -4,6 +4,7 @@
   "description": "Dig Down Dwarf Simulator",
   "main": "index.coffee",
   "scripts": {
+    "start": "coffee bin/ddd",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/royvandewater/ddd/issues"
   },
-  "homepage": "https://github.com/royvandewater/ddd"
+  "homepage": "https://github.com/royvandewater/ddd",
+  "dependencies": {
+    "coffee-script": "~1.7.1"
+  }
 }
