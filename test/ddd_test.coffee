@@ -32,11 +32,45 @@ describe 'DDD', ->
       expect(@sut.bag_of_gems).to.have.a.lengthOf 37
 
   describe 'play', ->
+    describe 'the pot', ->
+      describe 'at the start of the game', ->
+        it 'should be empty', ->
+          @sut = new DDD
+          expect(@sut.pot).to.be.empty
+
+      describe 'with the default bag_of_gems', ->
+        beforeEach ->
+          @sut = new DDD players: [new FakePlayer]
+          @sut.play()
+
+        it 'should add three gems to the pot', ->
+          expect(@sut.pot).to.have.a.lengthOf 3
+
+        it 'should remove three gems from the bag_of_gems', ->
+          expect(@sut.bag_of_gems).to.have.a.lengthOf 37 - 3
+
+      describe 'if the bag_of_gems has only three coal left', ->
+        beforeEach ->
+          @sut = new DDD players: [new FakePlayer]
+          @sut.bag_of_gems = ['coal', 'coal', 'coal']
+          @sut.play()
+
+        it 'should take that coal and put it in the pot', ->
+          expect(@sut.pot).to.deep.equal ['coal', 'coal', 'coal']
+
+      describe 'if the bag_of_gems has only three gems left', ->
+        beforeEach ->
+          @sut = new DDD players: [new FakePlayer]
+          @sut.bag_of_gems = ['peridot', 'diamond', 'amethyst']
+          @sut.play()
+
+        it 'should take those gems and put them in the pot', ->
+          expect(@sut.pot).to.include.members ['peridot', 'diamond', 'amethyst']
+
     describe 'with two players', ->
       beforeEach ->
         @player1 = new FakePlayer
-        @player2 = new FakePlayer
-        @sut = new DDD players: [@player1, @player2]
+        @sut = new DDD players: [@player1]
         @sut.play()
 
       it 'should add three gems to the pot', ->
@@ -45,31 +79,63 @@ describe 'DDD', ->
       it 'should remove three gems from the bag_of_gems', ->
         expect(@sut.bag_of_gems).to.have.a.lengthOf 37 - 3
 
-  describe 'pot', ->
-    describe 'at the start of the game', ->
-      it 'should be empty', ->
-        @sut = new DDD
-        expect(@sut.pot).to.be.empty
+      it 'should notify player 1 that his turn is up', ->
+        expect(@player1.take_a_turn_was_called).to.be.true
 
-    describe 'if the bag_of_gems has only three coal left', ->
+      it 'should give the player a copy of the pot', ->
+        first_argument = @player1.take_a_turn_arguments[0]
+        expect(first_argument).to.deep.equal @sut.pot
+        expect(first_argument).to.not.equal @sut.pot
+
+      it 'should give the player the set of 4 dice', ->
+        second_argument = @player1.take_a_turn_arguments[1]
+        expect(second_argument).to.have.a.lengthOf 4
+
+      it 'should give the player a callback to call when done', ->
+        third_argument = @player1.take_a_turn_arguments[2]
+        expect(third_argument).to.be.a 'function'
+
+  describe 'reroll', ->
+    beforeEach ->
+      @player1 = new FakePlayer
+      @sut = new DDD players: [@player1]
+      @sut.play()
+
+    describe 'when reroll is called with falses', ->
       beforeEach ->
-        @sut = new DDD
-        @sut.bag_of_gems = ['coal', 'coal', 'coal']
-        @sut.play()
+        @original_dice = _.clone @sut.dice
+        @sut.reroll [false, false, false, false]
 
-      it 'should take that coal and put it in the pot', ->
-        expect(@sut.pot).to.deep.equal ['coal', 'coal', 'coal']
+      it 'should not roll any dice', ->
+        expect(@sut.dice).to.deep.equal @original_dice
 
-    describe 'if the bag_of_gems has only three gems left', ->
+    describe 'when reroll is called with trues', ->
       beforeEach ->
-        @sut = new DDD
-        @sut.bag_of_gems = ['peridot', 'diamond', 'amethyst']
-        @sut.play()
+        @original_dice = _.clone @sut.dice
+        @sut.reroll [true, true, true, true]
 
-      it 'should take those gems and put them in the pot', ->
-        expect(@sut.pot).to.include.members ['peridot', 'diamond', 'amethyst']
+      it 'should roll all the dice', ->
+        expect(@sut.dice).not.to.deep.equal @original_dice
+
+    describe 'when reroll is called with a true and three falses', ->
+      beforeEach ->
+        @original_dice = _.clone @sut.dice
+        @sut.reroll [true, false, false, false]
+
+      it 'should roll the first die', ->
+        expect(@sut.dice[0]).not.to.equal @original_dice[0]
+
+      it 'should not reroll the other three die', ->
+        expect(@sut.dice[1..3]).to.deep.equal @original_dice[1..3]
+
+
+
+
 
 
 class FakePlayer
+  take_a_turn: =>
+    @take_a_turn_was_called = true
+    @take_a_turn_arguments = arguments
 
 
