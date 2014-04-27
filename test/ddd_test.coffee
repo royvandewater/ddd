@@ -1,5 +1,6 @@
-DDD = require '../src/ddd'
-_   = require 'underscore'
+DDD        = require '../src/ddd'
+_          = require 'underscore'
+seedrandom = require 'seedrandom'
 
 describe 'DDD', ->
   it 'should instantiate', ->
@@ -98,7 +99,7 @@ describe 'DDD', ->
   describe 'reroll', ->
     beforeEach ->
       @player1 = new FakePlayer
-      @sut = new DDD players: [@player1]
+      @sut = new DDD players: [@player1], random: seedrandom('seed')
       @sut.play()
 
     describe 'when reroll is called with falses', ->

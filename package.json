@@ -30,6 +30,7 @@
     "chai": "~1.9.1",
     "sinon": "~1.9.1",
     "watch": "~0.10.0",
-    "underscore": "~1.6.0"
+    "underscore": "~1.6.0",
+    "seedrandom": "~2.3.4"
   }
 }
