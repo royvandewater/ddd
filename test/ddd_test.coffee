@@ -68,7 +68,7 @@ describe 'DDD', ->
         it 'should take those gems and put them in the pot', ->
           expect(@sut.pot).to.include.members ['peridot', 'diamond', 'amethyst']
 
-    describe 'with two players', ->
+    describe 'with a player', ->
       beforeEach ->
         @player1 = new FakePlayer
         @sut = new DDD players: [@player1]
@@ -100,7 +100,24 @@ describe 'DDD', ->
     beforeEach ->
       @player1 = new FakePlayer
       @sut = new DDD players: [@player1], random: seedrandom('seed')
-      @sut.play()
+      @sut.roll_the_dice()
+
+    describe 'when reroll is called', ->
+      beforeEach ->
+        @sut.reroll [false, false, false, false]
+
+      it 'should call take_a_turn on the player', ->
+        expect(@player1.take_a_turn_was_called).to.be.true
+
+    describe 'when reroll is called for the third time', ->
+      beforeEach ->
+        @sut.reroll [false, false, false, false]
+        @sut.reroll [false, false, false, false]
+        @player1.clear()
+        @sut.reroll [false, false, false, false]
+
+      it 'should not call take_a_turn', ->
+        expect(@player1.take_a_turn_was_called).to.be.false
 
     describe 'when reroll is called with falses', ->
       beforeEach ->
@@ -135,6 +152,13 @@ describe 'DDD', ->
 
 
 class FakePlayer
+  constructor: ->
+    @clear()
+
+  clear: =>
+    @take_a_turn_was_called = false
+    @take_a_turn_arguments = undefined
+
   take_a_turn: =>
     @take_a_turn_was_called = true
     @take_a_turn_arguments = arguments

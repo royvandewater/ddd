@@ -13,13 +13,18 @@ class DDD
 
     @pot = []
     @dice = [1,1,1,1]
+    @roll_count = 0
 
   add_to_bag: (quantity, gem) =>
     _.times quantity, => @bag_of_gems.push gem
 
   play: =>
+    @roll_count = 0
     _.times 3, => @pot.push @take_random_gem_from_bag()
     @roll_the_dice()
+    @player_takes_a_turn()
+
+  player_takes_a_turn: =>
     _.first(@players).take_a_turn _.clone(@pot), @dice, @reroll
 
   random: (min, max) =>
@@ -30,13 +35,14 @@ class DDD
     return min + Math.floor(@random_funtion() * (max - min + 1))
 
   reroll: (rerolls) =>
-    _.each rerolls, (reroll, i) =>
-      if reroll
-        @dice[i] = @random 0, 6
+    @roll_the_dice rerolls
+    @player_takes_a_turn() if @roll_count < 3
 
-  roll_the_dice: =>
+  roll_the_dice: (rerolls=[true,true,true,true]) =>
+    @roll_count++
     _.each @dice, (val, i) =>
-      @dice[i] = @random 0, 6
+      if rerolls[i]
+        @dice[i] = @random 0, 6
 
   take_random_gem_from_bag: =>
     index = @random 0, @bag_of_gems.length - 1
