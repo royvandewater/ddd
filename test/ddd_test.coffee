@@ -32,6 +32,23 @@ describe 'DDD', ->
     it 'should have a total length of 37', ->
       expect(@sut.bag_of_gems).to.have.a.lengthOf 37
 
+  describe 'pair', ->
+    describe 'when there is no pair', ->
+      beforeEach ->
+        @sut = new DDD()
+        @sut.dice = [1,2,3,4]
+
+      it 'should return something falsy', ->
+        expect(@sut.pair()).to.be.false
+
+    describe 'when there is a pair', ->
+      beforeEach ->
+        @sut = new DDD()
+        @sut.dice = [1,1,3,4]
+
+      it 'should return true', ->
+        expect(@sut.pair()).to.be.true
+
   describe 'play', ->
     describe 'the pot', ->
       describe 'at the start of the game', ->
@@ -96,11 +113,118 @@ describe 'DDD', ->
         third_argument = @player1.take_a_turn_arguments[2]
         expect(third_argument).to.be.a 'function'
 
+  describe 'player_ends_turn', ->
+    describe 'when the player wins nothing', ->
+      beforeEach ->
+        @player1 = new FakePlayer()
+        @sut = new DDD players: [@player1]
+        @sut.pot = ['diamond', 'coal', 'coal']
+        @sut.dice = [1,3,4,5]
+        @sut.player_ends_turn()
+
+      it 'should call end_turn on the player', ->
+        expect(@player1.end_turn_was_called).to.be.true
+
+      it 'should call end_turn on the player with an empty array', ->
+        expect(@player1.end_turn_arguments[0]).to.deep.equal []
+
+    describe 'when the player has won all the coal', ->
+      describe 'when there are two coal', ->
+        beforeEach ->
+          @player1 = new FakePlayer()
+          @sut = new DDD players: [@player1]
+          @sut.pot = ['diamond', 'coal', 'coal']
+          @sut.dice = [1,1,4,5]
+          @sut.player_ends_turn()
+
+        it 'should call end_turn on the player with the coal', ->
+          expect(@player1.end_turn_arguments[0]).to.deep.equal ['coal', 'coal']
+
+        it 'should remove the coal from the pot', ->
+          expect(@sut.pot).not.to.include 'coal'
+
+      describe 'when there are three coal', ->
+        beforeEach ->
+          @player1 = new FakePlayer()
+          @sut = new DDD players: [@player1]
+          @sut.pot = ['diamond', 'coal', 'coal', 'coal']
+          @sut.dice = [1,1,4,5]
+          @sut.player_ends_turn()
+
+        it 'should call end_turn on the player with the coal', ->
+          expect(@player1.end_turn_arguments[0]).to.deep.equal ['coal', 'coal', 'coal']
+
+    describe 'when the player has won all the amethyst', ->
+      beforeEach ->
+        @player1 = new FakePlayer()
+        @sut = new DDD players: [@player1]
+        @sut.pot = ['diamond', 'coal', 'coal', 'amethyst']
+        @sut.dice = [3,3,3,5]
+        @sut.player_ends_turn()
+
+      it 'should call end_turn on the player with an the amethyst', ->
+        expect(@player1.end_turn_arguments[0]).to.deep.equal ['amethyst']
+
+      it 'should know that the player now has an amethyst', ->
+        expect(@sut.winnings[@player1]).to.include 'amethyst'
+
+    describe 'when the player has won all the citrine', ->
+      beforeEach ->
+        @player1 = new FakePlayer()
+        @sut = new DDD players: [@player1]
+        @sut.pot = ['citrine', 'coal', 'coal', 'amethyst']
+        @sut.dice = [3,4,5,6]
+        @sut.player_ends_turn()
+
+      it 'should call end_turn on the player with an the citrine', ->
+        expect(@player1.end_turn_arguments[0]).to.deep.equal ['citrine']
+
+    describe 'when the player has won all the diamond', ->
+      beforeEach ->
+        @player1 = new FakePlayer()
+        @sut = new DDD players: [@player1]
+        @sut.pot = ['citrine', 'coal', 'diamond', 'amethyst']
+        @sut.dice = [3,3,3,3]
+        @sut.player_ends_turn()
+
+      it 'should call end_turn on the player with an the diamond', ->
+        expect(@player1.end_turn_arguments[0]).to.deep.equal ['diamond']
+
+    describe 'when the player has won all the peridot', ->
+      beforeEach ->
+        @player1 = new FakePlayer()
+        @sut = new DDD players: [@player1]
+        @sut.pot = ['citrine', 'coal', 'peridot', 'amethyst']
+        @sut.dice = [3,3,4,4]
+        @sut.player_ends_turn()
+
+      it 'should call end_turn on the player with the peridot', ->
+        expect(@player1.end_turn_arguments[0]).to.deep.equal ['peridot']
+
+  describe 'straight', ->
+    describe 'when there is no straight', ->
+      beforeEach ->
+        @sut = new DDD
+        @sut.dice = [1,3,4,5]
+
+      it 'should be false', ->
+        expect(@sut.straight()).to.be.false
+
+    describe 'when there is a straight', ->
+      beforeEach ->
+        @sut = new DDD
+        @sut.dice = [2,3,4,5]
+
+      it 'should be true', ->
+        expect(@sut.straight()).to.be.true
+
+
   describe 'reroll', ->
     beforeEach ->
       @player1 = new FakePlayer
-      @sut = new DDD players: [@player1], random: seedrandom('seed')
-      @sut.roll_the_dice()
+      @player2 = new FakePlayer
+      @sut = new DDD players: [@player1, @player2], random: seedrandom('seed')
+      @sut.dice = [2,2,2,2]
 
     describe 'when reroll is called', ->
       beforeEach ->
@@ -110,14 +234,30 @@ describe 'DDD', ->
         expect(@player1.take_a_turn_was_called).to.be.true
 
     describe 'when reroll is called for the third time', ->
-      beforeEach ->
-        @sut.reroll [false, false, false, false]
-        @sut.reroll [false, false, false, false]
-        @player1.clear()
-        @sut.reroll [false, false, false, false]
+      describe 'and there are no sixes', ->
+        beforeEach ->
+          @sut.dice = [2, 2, 2, 2]
+          @sut.reroll [false, false, false, false]
+          @sut.reroll [false, false, false, false]
+          @player1.clear()
+          @sut.reroll [false, false, false, false]
 
-      it 'should not call take_a_turn', ->
-        expect(@player1.take_a_turn_was_called).to.be.false
+        it 'should not call take_a_turn', ->
+          expect(@player1.take_a_turn_was_called).to.be.false
+
+        it 'should instead call end_turn on the player', ->
+          expect(@player1.end_turn_was_called).to.be.true
+
+      describe 'and there is at least one 6', ->
+        beforeEach ->
+          @sut.dice = [2, 2, 6, 2]
+          @sut.reroll [false, false, false, false]
+          @sut.reroll [false, false, false, false]
+          @player1.clear()
+          @sut.reroll [false, false, false, false]
+
+        it 'should call take_a_turn', ->
+          expect(@player1.take_a_turn_was_called).to.be.true
 
     describe 'when reroll is called with falses', ->
       beforeEach ->
@@ -146,10 +286,48 @@ describe 'DDD', ->
       it 'should not reroll the other three die', ->
         expect(@sut.dice[1..3]).to.deep.equal @original_dice[1..3]
 
+    describe 'when the dice contain a 1', ->
+      beforeEach ->
+        @sut.dice = [1,2,2,2]
+
+      describe 'when the frozen die is asked to reroll', ->
+        beforeEach ->
+          @original_dice = _.clone @sut.dice
+          @sut.reroll [true, false, false, false]
+
+        it 'should not reroll it', ->
+          expect(@sut.dice[0]).to.equal 1
+
+  describe 'two_pair', ->
+    describe 'when there is no two pair', ->
+      beforeEach ->
+        @sut = new DDD
+        @sut.dice = [1,2,4,5]
+
+      it 'should return false', ->
+        expect(@sut.two_pair()).to.be.false
+
+    describe 'when there are two pair', ->
+      beforeEach ->
+        @sut = new DDD
+        @sut.dice = [1,1,4,4]
+
+      it 'should return true', ->
+        expect(@sut.two_pair()).to.be.true
 
 
+  describe 'winnings', ->
+    describe 'when there are two players', ->
+      beforeEach ->
+        @player1 = new FakePlayer
+        @player2 = new FakePlayer
+        @sut = new DDD players: [@player1, @player2]
 
+      it 'should have empty winnings for player 1', ->
+        expect(@sut.winnings[@player1]).to.deep.equal []
 
+      it 'should have empty winnings for player 2', ->
+        expect(@sut.winnings[@player2]).to.deep.equal []
 
 class FakePlayer
   constructor: ->
@@ -158,6 +336,12 @@ class FakePlayer
   clear: =>
     @take_a_turn_was_called = false
     @take_a_turn_arguments = undefined
+    @end_turn_was_called = false
+    @end_turn_arguments = undefined
+
+  end_turn: =>
+    @end_turn_was_called = true
+    @end_turn_arguments = arguments
 
   take_a_turn: =>
     @take_a_turn_was_called = true
