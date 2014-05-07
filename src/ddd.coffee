@@ -22,7 +22,7 @@ class DDD
     @add_to_bag 10, 'coal'
 
     @pot = []
-    @dice = [1,1,1,1]
+    @reset_dice()
     @roll_count = 0
 
     @winnings = {}
@@ -68,10 +68,11 @@ class DDD
     _.each prize, (gem) => @winnings[@current_player].push gem
     @current_player.end_turn prize
     @current_player = @next_player()
+    @reset_dice()
     @play()
 
   player_takes_a_turn: =>
-    @current_player.take_a_turn _.clone(@pot), @dice, @reroll
+    @current_player.take_a_turn _.clone(@pot), _.clone(@dice), @reroll
 
   prize: =>
     if @quads()    then return @extract 'diamond'
@@ -89,7 +90,9 @@ class DDD
       max = min
       min = 0
 
-    return min + Math.floor(@random_funtion() * (max - min + 1))
+    random_number = @random_funtion()
+
+    return min + Math.floor(random_number * (max - min + 1))
 
   reroll: (rerolls) =>
     @roll_the_dice rerolls
@@ -97,6 +100,9 @@ class DDD
       @player_takes_a_turn()
     else
       @player_ends_turn()
+
+  reset_dice: =>
+    @dice = [6,6,6,6]
 
   roll_the_dice: (rerolls=[true,true,true,true]) =>
     @roll_count++

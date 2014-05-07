@@ -22,7 +22,8 @@
   "homepage": "https://github.com/royvandewater/ddd",
   "dependencies": {
     "coffee-script": "~1.7.1",
-    "cli-table": "~0.3.0"
+    "cli-table": "~0.3.0",
+    "prompt": "~0.2.12"
   },
   "devDependencies": {
     "mocha": "~1.18.2",
