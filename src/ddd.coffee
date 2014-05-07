@@ -12,6 +12,7 @@ class DDD
   constructor: (options={}) ->
     @players = options.players
     @random_funtion = options.random ? Math.random
+    @print = options.console?.log ? console.log
 
     @bag_of_gems = ['diamond']
     @add_to_bag 4,  'peridot'
@@ -23,7 +24,7 @@ class DDD
     @dice = [1,1,1,1]
     @roll_count = 0
 
-    @winnings = []
+    @winnings = {}
     _.each @players, (player) =>
       @winnings[player] = []
 
@@ -31,6 +32,13 @@ class DDD
 
   add_to_bag: (quantity, gem) =>
     _.times quantity, => @bag_of_gems.push gem
+
+  end_game: =>
+    @print 'Game Over'
+    @print '========='
+    @print ''
+    _.each @players, (player) =>
+      @print player.name, ': ', @winnings[player]
 
   extract: (desired_gem) =>
     _.where @pot, desired_gem
@@ -47,6 +55,7 @@ class DDD
     @n_of_a_kind 2
 
   play: =>
+    return @end_game() if @last_turn == @current_player
     @roll_count = 0
     _.times 3, => @pot.push @take_random_gem_from_bag()
     @roll_the_dice()
@@ -59,6 +68,7 @@ class DDD
     _.each prize, (gem) => @winnings[@current_player].push gem
     @current_player.end_turn prize
     @current_player = @next_player()
+    @play()
 
   player_takes_a_turn: =>
     @current_player.take_a_turn _.clone(@pot), @dice, @reroll
@@ -107,6 +117,8 @@ class DDD
     index = @random 0, @bag_of_gems.length - 1
     gem = @bag_of_gems[index]
     @bag_of_gems.splice index, 1
+    if _.isEmpty @bag_of_gems
+      @last_turn = @current_player
     return gem
 
   trips: =>
@@ -114,7 +126,5 @@ class DDD
 
   two_pair: =>
     _.all _.countBy(@dice), (count) -> count == 2
-
-
 
 module.exports = DDD

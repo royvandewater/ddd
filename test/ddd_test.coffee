@@ -113,6 +113,16 @@ describe 'DDD', ->
         third_argument = @player1.take_a_turn_arguments[2]
         expect(third_argument).to.be.a 'function'
 
+    describe 'when last_turn is set to the player about to go', ->
+      beforeEach ->
+        @player = new FakePlayer
+        @sut = new DDD players: [@player], console: new FakeConsole
+        @sut.last_turn = @player
+        @sut.play()
+
+      it 'should end without letting the player take_a_turn', ->
+        expect(@player.take_a_turn_was_called).to.be.false
+
   describe 'player_ends_turn', ->
     describe 'when there are two players', ->
       beforeEach ->
@@ -155,7 +165,7 @@ describe 'DDD', ->
       describe 'when there are two coal', ->
         beforeEach ->
           @player1 = new FakePlayer()
-          @sut = new DDD players: [@player1]
+          @sut = new DDD players: [@player1], random: seedrandom('seed1')
           @sut.pot = ['diamond', 'coal', 'coal']
           @sut.dice = [1,1,4,5]
           @sut.player_ends_turn()
@@ -362,6 +372,17 @@ describe 'DDD', ->
       it 'should be true', ->
         expect(@sut.straight()).to.be.true
 
+  describe 'take_random_gem_from_bag', ->
+    describe 'when the last gem is drawn', ->
+      beforeEach ->
+        @player = new FakePlayer
+        @sut = new DDD players: [@player]
+        @sut.bag_of_gems = ['amethyst']
+        @sut.take_random_gem_from_bag()
+
+      it 'should set last_turn to current_player', ->
+        expect(@sut.last_turn).to.equal @sut.current_player
+
   describe 'two_pair', ->
     describe 'when there is no two pair', ->
       beforeEach ->
@@ -410,4 +431,5 @@ class FakePlayer
     @take_a_turn_was_called = true
     @take_a_turn_arguments = arguments
 
-
+class FakeConsole
+  log: =>
