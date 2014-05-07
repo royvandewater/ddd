@@ -1,4 +1,12 @@
 _ = require 'underscore'
+_.mixin require './underscore_math'
+
+GEM_VALUES =
+  diamond:  12
+  peridot:   7
+  citrine:   4
+  amethyst:  2
+  coal:     -1
 
 class DDD
   constructor: (options={}) ->
@@ -26,7 +34,7 @@ class DDD
     _.where @pot, desired_gem
 
   n_of_a_kind: (n) =>
-    _.any _.countBy(@dice), (count) => count == n
+    _.any _.countBy(@dice), (count) -> count == n
 
   pair: =>
     @n_of_a_kind 2
@@ -79,6 +87,9 @@ class DDD
       if val != 1 && rerolls[i]
         @dice[i] = @random 0, 6
 
+  score: (player) =>
+    _.sum _.map @winnings[player], (gem) -> GEM_VALUES[gem]
+
   straight: =>
     min = _.min(@dice)
     max = _.max(@dice)
@@ -95,7 +106,7 @@ class DDD
     @n_of_a_kind 3
 
   two_pair: =>
-    _.all _.countBy(@dice), (count) => count == 2
+    _.all _.countBy(@dice), (count) -> count == 2
 
 
 

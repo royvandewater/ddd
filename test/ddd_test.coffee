@@ -201,24 +201,6 @@ describe 'DDD', ->
       it 'should call end_turn on the player with the peridot', ->
         expect(@player1.end_turn_arguments[0]).to.deep.equal ['peridot']
 
-  describe 'straight', ->
-    describe 'when there is no straight', ->
-      beforeEach ->
-        @sut = new DDD
-        @sut.dice = [1,3,4,5]
-
-      it 'should be false', ->
-        expect(@sut.straight()).to.be.false
-
-    describe 'when there is a straight', ->
-      beforeEach ->
-        @sut = new DDD
-        @sut.dice = [2,3,4,5]
-
-      it 'should be true', ->
-        expect(@sut.straight()).to.be.true
-
-
   describe 'reroll', ->
     beforeEach ->
       @player1 = new FakePlayer
@@ -298,6 +280,65 @@ describe 'DDD', ->
         it 'should not reroll it', ->
           expect(@sut.dice[0]).to.equal 1
 
+  describe 'score', ->
+    describe 'when a player has no winnings', ->
+      it 'should return 0 for that player', ->
+        @player = new FakePlayer
+        @sut = new DDD players: [@player]
+        expect(@sut.score(@player)).to.equal 0
+
+    describe 'when a player has two peridot', ->
+      it 'should return 14 for that player', ->
+        @player = new FakePlayer
+        @sut = new DDD players: [@player]
+        @sut.winnings[@player] = ['peridot', 'peridot']
+        expect(@sut.score(@player)).to.equal 14
+
+    describe 'when a player has three citrine', ->
+      it 'should return 12 for that player', ->
+        @player = new FakePlayer
+        @sut = new DDD players: [@player]
+        @sut.winnings[@player] = ['citrine', 'citrine', 'citrine']
+        expect(@sut.score(@player)).to.equal 12
+
+    describe 'when a player has one citrine and one diamond', ->
+      it 'should return 16 for that player', ->
+        @player = new FakePlayer
+        @sut = new DDD players: [@player]
+        @sut.winnings[@player] = ['citrine', 'diamond']
+        expect(@sut.score(@player)).to.equal 16
+
+    describe 'when a player has an amethyst', ->
+      it 'should return 2 for that player', ->
+        @player = new FakePlayer
+        @sut = new DDD players: [@player]
+        @sut.winnings[@player] = ['amethyst']
+        expect(@sut.score(@player)).to.equal 2
+
+    describe 'when a player has an amethyst and one coal', ->
+      it 'should return 1 for that player', ->
+        @player = new FakePlayer
+        @sut = new DDD players: [@player]
+        @sut.winnings[@player] = ['amethyst', 'coal']
+        expect(@sut.score(@player)).to.equal 1
+
+  describe 'straight', ->
+    describe 'when there is no straight', ->
+      beforeEach ->
+        @sut = new DDD
+        @sut.dice = [1,3,4,5]
+
+      it 'should be false', ->
+        expect(@sut.straight()).to.be.false
+
+    describe 'when there is a straight', ->
+      beforeEach ->
+        @sut = new DDD
+        @sut.dice = [2,3,4,5]
+
+      it 'should be true', ->
+        expect(@sut.straight()).to.be.true
+
   describe 'two_pair', ->
     describe 'when there is no two pair', ->
       beforeEach ->
@@ -314,7 +355,6 @@ describe 'DDD', ->
 
       it 'should return true', ->
         expect(@sut.two_pair()).to.be.true
-
 
   describe 'winnings', ->
     describe 'when there are two players', ->
