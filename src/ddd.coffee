@@ -1,5 +1,6 @@
 _ = require 'underscore'
 _.mixin require './underscore_math'
+Table = require 'cli-table'
 
 GEM_VALUES =
   diamond:  12
@@ -37,8 +38,7 @@ class DDD
     @print 'Game Over'
     @print '========='
     @print ''
-    _.each @players, (player) =>
-      @print player.name, ': ', @winnings[player]
+    @print @score_table()
 
   extract: (desired_gem) =>
     _.where @pot, desired_gem
@@ -106,6 +106,13 @@ class DDD
 
   score: (player) =>
     _.sum _.map @winnings[player], (gem) -> GEM_VALUES[gem]
+
+  score_table: =>
+    table = new Table head: ['Player', 'Score']
+    _.each @players, (player) =>
+      table.push [player.name, @score(player)]
+    table.toString()
+
 
   straight: =>
     min = _.min(@dice)

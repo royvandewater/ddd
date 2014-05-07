@@ -415,6 +415,7 @@ describe 'DDD', ->
 
 class FakePlayer
   constructor: ->
+    @name = 'FakePlayer'
     @clear()
 
   clear: =>
