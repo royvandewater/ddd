@@ -114,6 +114,29 @@ describe 'DDD', ->
         expect(third_argument).to.be.a 'function'
 
   describe 'player_ends_turn', ->
+    describe 'when there are two players', ->
+      beforeEach ->
+        @player1 = new FakePlayer
+        @player2 = new FakePlayer
+        @sut = new DDD players: [@player1, @player2]
+
+      describe 'when the first player ends his turn', ->
+        beforeEach ->
+          @sut.current_player = @player1
+
+        it 'should update current_player to @player2', ->
+          @sut.player_ends_turn()
+          expect(@sut.current_player).to.equal @player2
+
+      describe 'when the second player ends his turn', ->
+        beforeEach ->
+          @sut.current_player = @player2
+
+        it 'should update current_player to @player1', ->
+          @sut.player_ends_turn()
+          expect(@sut.current_player).to.equal @player1
+
+
     describe 'when the player wins nothing', ->
       beforeEach ->
         @player1 = new FakePlayer()

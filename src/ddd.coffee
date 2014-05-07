@@ -27,6 +27,8 @@ class DDD
     _.each @players, (player) =>
       @winnings[player] = []
 
+    @current_player = _.first @players
+
   add_to_bag: (quantity, gem) =>
     _.times quantity, => @bag_of_gems.push gem
 
@@ -35,6 +37,11 @@ class DDD
 
   n_of_a_kind: (n) =>
     _.any _.countBy(@dice), (count) -> count == n
+
+  next_player: =>
+    index = @players.indexOf @current_player
+    next_index = (index + 1) % _.size(@players)
+    @players[next_index]
 
   pair: =>
     @n_of_a_kind 2
@@ -47,14 +54,14 @@ class DDD
 
   player_ends_turn: =>
     prize = @prize()
-    player = _.first @players
 
     @pot = _.difference @pot, prize
-    _.each prize, (gem) => @winnings[player].push gem
-    player.end_turn prize
+    _.each prize, (gem) => @winnings[@current_player].push gem
+    @current_player.end_turn prize
+    @current_player = @next_player()
 
   player_takes_a_turn: =>
-    _.first(@players).take_a_turn _.clone(@pot), @dice, @reroll
+    @current_player.take_a_turn _.clone(@pot), @dice, @reroll
 
   prize: =>
     if @quads()    then return @extract 'diamond'
