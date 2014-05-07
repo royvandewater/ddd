@@ -96,7 +96,10 @@ class DDD
 
   reroll: (rerolls) =>
     @roll_the_dice rerolls
-    if @roll_count < 3 || _.contains(@dice, 6)
+
+    if @roll_count < 3
+      @player_takes_a_turn()
+    else if _.any(rerolls) && _.contains(@dice, 6)
       @player_takes_a_turn()
     else
       @player_ends_turn()
@@ -108,7 +111,7 @@ class DDD
     @roll_count++
     _.each @dice, (val, i) =>
       if val != 1 && rerolls[i]
-        @dice[i] = @random 0, 6
+        @dice[i] = @random 1, 6
 
   score: (player) =>
     _.sum _.map @winnings[player], (gem) -> GEM_VALUES[gem]

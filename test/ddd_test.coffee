@@ -269,10 +269,13 @@ describe 'DDD', ->
           @sut.reroll [false, false, false, false]
           @sut.reroll [false, false, false, false]
           @player1.clear()
-          @sut.reroll [false, false, false, false]
 
-        it 'should call take_a_turn', ->
-          expect(@player1.take_a_turn_was_called).to.be.true
+        describe 'and reroll is called with all falses', ->
+          beforeEach ->
+            @sut.reroll [false, false, false, false]
+
+          it 'should call end_turn', ->
+            expect(@player1.end_turn_was_called).to.be.true
 
     describe 'when reroll is called with falses', ->
       beforeEach ->
